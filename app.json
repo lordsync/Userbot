@@ -22,8 +22,8 @@
          "value":""
       },
       "STRING_SESSION":{
-         "description":"Get this value by running python3 string_session.py locally.",
-         "value":""
+         "description":"[REQUIRED] Get this value by running python3 string_session.py in app console.",
+         "required":false
       },
       "CHROME_DRIVER":{
          "description":"ChromeDriver location.",
