@@ -1,8 +1,6 @@
 # Telegram-UserBot
 
-### If the CI builds pass, but you still get syntax errors when running locally it's most probably not a problem with the source but with your version of python
-
-### # Heroku Deploy
+### # The easiest way to deploy this bad boy !!
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ```
@@ -45,8 +43,13 @@ I would like to thank people who assisted me throughout this project:
 * [@songotenks69](https://github.com/songotenks69)
 * [@Ovenoboyo](https://github.com/Ovenoboyo)
 * [SphericalKat](https://github.com/ATechnoHazard)
-* [nitamarcel](https://github.com/nitanmarcel)
+* [@nitanmarcell's TelegramCompanion](https://www.github.com/nitanmarcel/telegramcompanion)
+* [@spechide's UniBorg](https://www.github.com/spechide/uniborg)
+* [@Jeepeo's JBot](https://github.com/Jeepeo/JBot)
 
-and many more people who aren't mentioned here.
+and many more people and projects who aren't mentioned here.
+
+All features taken from them are copyrighted to their respespective, if you are handling the features/module 
+by them you need to strictly comply their respective LICENSE 
 
 Found Bugs? Create an issue on the issue tracker, or post it in the [support group](https://t.me/userbot_support).
