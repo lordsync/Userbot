@@ -8,6 +8,7 @@
 
 import os
 import bs4
+import re
 from time import sleep
 from html import unescape
 from re import findall
