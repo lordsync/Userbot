@@ -30,7 +30,7 @@ from googleapiclient.errors import HttpError
 from googletrans import LANGUAGES, Translator
 from gtts import gTTS
 from emoji import get_emoji_regexp
-import youtube_dl
+from pytube import YouTube
 
 from userbot import CMD_HELP, BOTLOG, BOTLOG_CHATID, YOUTUBE_API_KEY, CHROME_DRIVER, GOOGLE_CHROME_BIN
 from userbot.events import register
@@ -456,10 +456,17 @@ async def yt_search(video_q):
         query = video_q.pattern_match.group(1)
         result = ''
         i = 1
+
+        if not YOUTUBE_API_KEY:
+            await video_q.edit("`Error: YouTube API key missing! Add it to environment vars or config.env.`")
+            return
+
+        await video_q.edit("```Processing...```")
+
         full_response = youtube_search(query)
         videos_json = full_response[1]
 
-        await video_q.edit("```Processing...```")
+        
         for video in videos_json:
             result += f"{i}. {unescape(video['snippet']['title'])} \
                 \nhttps://www.youtube.com/watch?v={video['id']['videoId']}\n"
@@ -514,64 +521,73 @@ async def download_video(v_url):
     if not v_url.text[0].isalpha() and v_url.text[0] not in ("/", "#", "@", "!"):
         url = v_url.pattern_match.group(1)
         quality = v_url.pattern_match.group(2)
-        err = ""
 
-        async def yt_dl_progress(d):
-            if d['status'] == 'downloading':
-                await v_url.edit(f"`ETA: {str(d['eta'])} seconds`!")
-    
-            elif d['status'] == 'finished':
-                await v_url.edit('Done downloading, now converting ...')
-                
-        class YTDLogger(object):
-            def debug(self, msg):
-                pass
+        await v_url.edit("**Fetching...**")
 
-            def warning(self, msg):
-                pass
+        video = YouTube(url)
 
-            def error(self, msg):
-                global err
-                err = msg
+        if quality:
+            video_stream = video.streams.filter(
+                progressive=True,
+                subtype="mp4",
+                res=quality
+            ).first()
+        else:
+            video_stream = video.streams.filter(
+                progressive=True,
+                subtype="mp4"
+            ).first()
 
-        ydl_opts = {'max_filesize': "50m",
-                    "format" : quality,
-                    "geo_bypass" : True,
-                    "writethumbnail": True,
-                    "progress_hooks": [{
-                        "filename": "ytdl"
-                    }],
-                    'postprocessors': [{
-                        'key': 'FFmpegVideoConvertor',
-                        'preferedformat': 'mp4',
-                    }],
-                    "logger" : YTDLogger(),
-                    'progress_hooks': [yt_dl_progress],
-                    }
+        if video_stream is None:
+            all_streams = video.streams.filter(
+                progressive=True,
+                subtype="mp4"
+            ).all()
+            available_qualities = ""
+
+            for item in all_streams[:-1]:
+                available_qualities += f"{item.resolution}, "
+            available_qualities += all_streams[-1].resolution
+
+            await v_url.edit(
+                "**A stream matching your query wasn't found. Try again with different options.\n**"
+                "**Available Qualities:**\n"
+                f"{available_qualities}"
+            )
+            return
+
+        video_size = video_stream.filesize / 1000000
+
+        if video_size >= 50:
+            await v_url.edit(
+                ("**File larger than 50MB. Sending the link instead.\n**"
+                 f"Get the video [here]({video_stream.url})\n\n"
+                 "**If the video plays instead of downloading, right click(or long press on touchscreen) and "
+                 "press 'Save Video As...'(may depend on the browser) to download the video.**")
+            )
+            return
 
         await v_url.edit("**Downloading...**")
 
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+        video_stream.download(filename=video.title)
 
-        if os.path.isfile("ytdl.mp4") and err == "":
-            await v_url.edit("**Uploading...**")
-            await v_url.client.send_file(
-                v_url.chat_id,
-                'ytdl.mp4',
+        url = f"https://img.youtube.com/vi/{video.video_id}/maxresdefault.jpg"
+        resp = get(url)
+        with open('thumbnail.jpg', 'wb') as file:
+            file.write(resp.content)
 
-                thumb="ytdl.jpg"
-            )
+        await v_url.edit("**Uploading...**")
+        await bot.send_file(
+            v_url.chat_id,
+            f'{safe_filename(video.title)}.mp4',
+            caption=f"{video.title}",
+            thumb="thumbnail.jpg"
+        )
 
-            os.remove("ytdl.mp4")
-            os.remove("ytdl.jpg")
-            await v_url.delete()
-
-        if err != "":
-            await v_url.edit(f"`Download failed due to error: {err}`!")
-        else:
-            await v_url.edit(f"Download failed! possibly because filesize was too big! here's your url: {url}")
-
+        os.remove(f"{safe_filename(video.title)}.mp4")
+        os.remove('thumbnail.jpg')
+        await v_url.delete()
+        
 def deEmojify(inputString):
     """ Remove emojis and other non-safe characters from string """
     return get_emoji_regexp().sub(u'', inputString)
