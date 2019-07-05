@@ -359,9 +359,9 @@ async def spider(spdr):
             
         self_user = await spdr.client.get_me()
 
-         if user.id == self_user.id:
-            await spdr.edit("`Mute Error! You are not supposed to mute yourself!`")
-            return
+        if user.id == self_user.id:
+        	await spdr.edit("`Mute Error! You are not supposed to mute yourself!`")
+        	return
             
         # If the targeted user is a Sudo
         if user.id in BRAIN_CHECKER:
