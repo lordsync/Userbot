@@ -17,10 +17,10 @@ from userbot import (COUNT_PM, CMD_HELP, BOTLOG, BOTLOG_CHATID,
 from userbot.events import register
 
 # ========================= CONSTANTS ============================
-UNAPPROVED_MSG = ("`Bleep blop! This is a bot. Don't fret.\n\n`"
-                  "`My master hasn't approved you to PM.`"
-                  "`Please wait for my master to look in, he mostly approves PMs.\n\n`"
-                  "`As far as I know, he doesn't usually approve retards though.`")
+UNAPPROVED_MSG = ("`Hello! This is a bot.\n\n`"
+                  "`My master hasn't approved you to PM yet,`"
+                  "`Please wait for him to look in, he mostly approves PMs.\n\n`"
+                  "`Also don't spam the PMs, you'll get blocked!`")
 # =================================================================
 
 
@@ -222,7 +222,7 @@ async def blockpm(block):
     """ For .block command, block people from PMing you! """
     if not block.text[0].isalpha() and block.text[0] not in ("/", "#", "@", "!"):
 
-        await block.edit("`You are gonna be blocked from PM-ing my Master!`")
+        await block.edit("`You've been blocked!`")
 
         if block.reply_to_msg_id:
             reply = await block.get_reply_message()
@@ -257,7 +257,7 @@ async def unblockpm(unblock):
     if not unblock.text[0].isalpha() and unblock.text[0] \
             not in ("/", "#", "@", "!") and unblock.reply_to_msg_id:
 
-        await unblock.edit("`My Master has forgiven you to PM now`")
+        await unblock.edit("`You have been unblocked.`")
 
         if unblock.reply_to_msg_id:
             reply = await unblock.get_reply_message()
